@@ -6,10 +6,13 @@ Source code and Dockerfile for my personal portfolio/dashboard, deployed to Kube
 
 ## Stack
 
-- **Runtime:** nginx:alpine
+- **Runtime:** nginx:alpine (non-root, port 8080)
 - **Container registry:** ghcr.io/victors-ucll/vic420-portfolio
-- **Deployment:** K3s via [homelab-k3s](https://github.com/VictorS-UCLL/homelab-k3s)
-- **Exposure:** Cloudflare Tunnel
+- **Orchestration:** K3s via [homelab-k3s](https://github.com/VictorS-UCLL/homelab-k3s)
+- **Ingress:** Traefik
+- **Exposure:** Cloudflare Tunnel (no open ports, no exposed IP)
+- **TLS:** Cloudflare Origin Certificate, Full (strict) mode
+- **CI/CD:** GitHub Actions → ghcr.io → manual rollout
 
 ---
 
@@ -17,9 +20,28 @@ Source code and Dockerfile for my personal portfolio/dashboard, deployed to Kube
 
 ```
 vic-dashboard/
-├── Dockerfile       # nginx:alpine, runs as non-root on port 8080
-├── nginx.conf       # Custom config, non-root compatible
-└── index.html       # Portfolio content
+├── .github/
+│   └── workflows/
+│       └── deploy.yml   # Build and push to ghcr.io
+├── Dockerfile           # nginx:alpine, runs as non-root on port 8080
+├── nginx.conf           # Custom config, non-root compatible, tmp dirs
+└── index.html           # Portfolio content
+```
+
+---
+
+## CI/CD workflow
+
+Pushing to `main` or triggering manually via the Actions tab:
+
+1. Builds the Docker image
+2. Pushes to `ghcr.io/victors-ucll/vic420-portfolio:latest`
+
+Then on the server, trigger the rollout:
+
+```bash
+kubectl rollout restart deployment portfolio
+kubectl rollout status deployment portfolio
 ```
 
 ---
@@ -33,7 +55,7 @@ docker build -t vic420-portfolio:latest .
 # Run locally
 docker run -d -p 8080:80 --name portfolio vic420-portfolio:latest
 
-# Open in browser
+# View in browser
 open http://localhost:8080
 
 # Stop
@@ -42,19 +64,14 @@ docker rm -f portfolio
 
 ---
 
-## Deployment
+## Manual deploy (server)
 
-Build and push to GitHub Container Registry:
+If you need to rebuild and push manually without GitHub Actions:
 
 ```bash
 docker build -t vic420-portfolio:latest .
 docker tag vic420-portfolio:latest ghcr.io/victors-ucll/vic420-portfolio:latest
 docker push ghcr.io/victors-ucll/vic420-portfolio:latest
-```
-
-Then trigger a rolling restart in K3s:
-
-```bash
 kubectl rollout restart deployment portfolio
 ```
 
@@ -62,19 +79,32 @@ kubectl rollout restart deployment portfolio
 
 ## Security
 
-- Container runs as `nginx` user, not root
-- Port 8080 inside container (non-privileged)
+- Container runs as `nginx` user — not root
+- Port 8080 inside container (non-privileged port)
 - Resource limits: 64Mi RAM, 100m CPU
-- No secrets or credentials in the image
+- `imagePullPolicy: Always` — always pulls latest image on restart
+- No secrets or credentials baked into the image
+- Traffic encrypted end-to-end via Cloudflare Tunnel + Full (strict) TLS
+- Real IP never exposed — Cloudflare Tunnel is outbound only
+
+---
+
+## GitHub Actions secrets required
+
+| Secret | Purpose |
+|--------|---------|
+| `REGISTRY_TOKEN` | GitHub PAT with `write:packages` scope for ghcr.io push |
 
 ---
 
 ## Roadmap
 
-- [x] Basic portfolio placeholder
-- [x] Non-root container
+- [x] Portfolio placeholder
+- [x] Non-root nginx container
 - [x] Resource limits
 - [x] Live at vic420.com via Cloudflare Tunnel
+- [x] HTTPS with Cloudflare Origin Certificate (Full strict)
+- [x] GitHub Actions CI/CD pipeline
 - [ ] Real portfolio design
-- [ ] GitHub Actions CI/CD pipeline
-- [ ] HTTPS via cert-manager
+- [ ] Automatic rollout on image push
+- [ ] Prometheus metrics
