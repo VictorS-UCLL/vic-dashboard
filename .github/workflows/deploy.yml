@@ -4,13 +4,14 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
 
 permissions:
   contents: read
   packages: write
 
 jobs:
-  build-and-deploy:
+  build-and-push:
     runs-on: ubuntu-latest
 
     steps:
@@ -30,12 +31,3 @@ jobs:
           context: .
           push: true
           tags: ghcr.io/victors-ucll/vic420-portfolio:latest
-
-      - name: Deploy to K3s
-        uses: actions-hub/kubectl@master
-        env:
-          KUBE_TOKEN: ${{ secrets.KUBE_TOKEN }}
-          KUBE_HOST: ${{ secrets.KUBE_SERVER }}
-          KUBE_CERTIFICATE: ""
-        with:
-          args: rollout restart deployment portfolio
