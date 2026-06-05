@@ -1,9 +1,12 @@
+import { Routes, Route } from 'react-router-dom'
 import { GithubIcon } from './components/icons'
 import Hero from './components/Hero'
 import MetricsPanel from './components/MetricsPanel'
 import Projects from './components/Projects'
 import Stack from './components/Stack'
 import Contact from './components/Contact'
+import Footer from './components/Footer'
+import Privacy from './pages/Privacy'
 
 const NAV_LINKS = [
   ['metrics', '#metrics'],
@@ -46,17 +49,27 @@ function Nav() {
   )
 }
 
-export default function App() {
+function Portfolio() {
   return (
-    <div id="top" className="relative min-h-screen">
+    <div id="top" className="relative flex min-h-screen flex-col">
       <Nav />
-      <main>
+      <main className="flex-1">
         <Hero />
         <MetricsPanel />
         <Projects />
         <Stack />
         <Contact />
       </main>
+      <Footer />
     </div>
+  )
+}
+
+export default function App() {
+  return (
+    <Routes>
+      <Route path="/" element={<Portfolio />} />
+      <Route path="/privacy" element={<Privacy />} />
+    </Routes>
   )
 }
