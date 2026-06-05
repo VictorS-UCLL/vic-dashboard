@@ -10,8 +10,6 @@ const LINKS = [
 ]
 
 export default function Contact() {
-  const year = new Date().getFullYear()
-
   return (
     <section id="contact" className="mx-auto max-w-5xl scroll-mt-24 px-6 py-20">
       <SectionLabel>contact</SectionLabel>
@@ -38,12 +36,6 @@ export default function Contact() {
         </div>
       </div>
 
-      <footer className="mt-12 flex flex-col items-start justify-between gap-2 border-t border-border pt-6 font-mono text-[11px] text-muted sm:flex-row sm:items-center">
-        <span>
-          <span className="text-accent/80">$</span> built with react + vite · served from k3s
-        </span>
-        <span>© {year} victor suciu — vic420.com</span>
-      </footer>
     </section>
   )
 }

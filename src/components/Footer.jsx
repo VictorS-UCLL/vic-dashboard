@@ -3,11 +3,15 @@ import { GithubIcon } from './icons'
 
 export default function Footer() {
   return (
-    <footer className="border-t border-border/40 bg-bg">
-      <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
-        <span className="font-mono text-[11px] text-muted">© 2026 Victor Suciu</span>
+    <footer className="border-t border-border bg-bg">
+      <div className="mx-auto flex max-w-5xl flex-col items-start justify-between gap-2 px-6 py-6 font-mono text-[11px] text-muted sm:flex-row sm:items-center">
+        <span>
+          © 2026 victor suciu — vic420.com
+          <span className="mx-3 opacity-30">·</span>
+          <span className="text-accent/80">$</span> built with react + vite · served from k3s
+        </span>
 
-        <div className="flex items-center gap-5 font-mono text-[11px] text-muted">
+        <div className="flex items-center gap-4">
           <Link
             to="/privacy"
             className="transition-colors duration-200 hover:text-ink"
