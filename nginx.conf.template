@@ -1,0 +1,59 @@
+# Rendered at image-build time via envsubst (only ${GRAFANA_TOKEN} is substituted;
+# nginx's own $variables are left intact). See Dockerfile.
+worker_processes 1;
+pid /tmp/nginx.pid;
+error_log /tmp/nginx-error.log warn;
+
+events {
+    worker_connections 1024;
+}
+
+http {
+    include /etc/nginx/mime.types;
+    default_type application/octet-stream;
+
+    # nginx runs as non-root (USER nginx) — keep every writable path under /tmp.
+    client_body_temp_path /tmp/client_temp;
+    proxy_temp_path /tmp/proxy_temp;
+    fastcgi_temp_path /tmp/fastcgi_temp;
+    uwsgi_temp_path /tmp/uwsgi_temp;
+    scgi_temp_path /tmp/scgi_temp;
+
+    server {
+        listen 8080;
+        server_name _;
+        root /usr/share/nginx/html;
+        index index.html;
+
+        gzip on;
+        gzip_types text/plain text/css application/javascript application/json image/svg+xml font/woff2;
+
+        # --- Security headers (applied to document responses) ---
+        add_header X-Content-Type-Options "nosniff" always;
+        add_header X-Frame-Options "DENY" always;
+        add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+        add_header Permissions-Policy "geolocation=(), microphone=(), camera=()" always;
+        add_header Content-Security-Policy "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; font-src 'self'; connect-src 'self'; base-uri 'self'; frame-ancestors 'none'; object-src 'none'" always;
+
+        # --- Live metrics: same-origin proxy to Grafana. The token is injected here,
+        #     server-side, so it never reaches the browser. ---
+        location /grafana-api/ {
+            proxy_pass https://grafana.vic420.com/;
+            proxy_set_header Host grafana.vic420.com;
+            proxy_set_header Authorization "Bearer ${GRAFANA_TOKEN}";
+            proxy_ssl_server_name on;
+            proxy_hide_header Set-Cookie;
+        }
+
+        # Vite fingerprints asset filenames (incl. self-hosted fonts) → cache hard.
+        location /assets/ {
+            expires 1y;
+            add_header Cache-Control "public, immutable";
+        }
+
+        # SPA fallback — every route resolves to index.html.
+        location / {
+            try_files $uri $uri/ /index.html;
+        }
+    }
+}

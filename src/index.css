@@ -1,0 +1,57 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-bg text-ink font-sans antialiased;
+    /* Subtle dot-grid texture — the "technical surface" the whole site sits on. */
+    background-image: radial-gradient(rgba(42, 45, 58, 0.45) 1px, transparent 1px);
+    background-size: 30px 30px;
+    background-attachment: fixed;
+  }
+
+  ::selection {
+    background-color: rgba(57, 255, 20, 0.22);
+    color: #fff;
+  }
+}
+
+@layer utilities {
+  /* Tabular figures so live metrics don't reflow as digits change. */
+  .tnum {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+/* Thin, dark scrollbar to match the dashboard surface. */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: #111318;
+}
+::-webkit-scrollbar-thumb {
+  background: #2a2d3a;
+  border-radius: 5px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #363a4a;
+}
+
+/* Respect users who prefer reduced motion — drop all non-essential animation. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
