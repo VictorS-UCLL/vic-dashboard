@@ -5,8 +5,8 @@ import { SectionLabel } from './ui'
 // NOTE: email + LinkedIn are placeholders — swap in the real ones.
 const LINKS = [
   { Icon: GithubIcon, label: 'VictorS-UCLL', href: 'https://github.com/VictorS-UCLL' },
-  { Icon: Mail, label: 'hello@vic420.com', href: 'mailto:hello@vic420.com' },
-  { Icon: LinkedinIcon, label: 'linkedin', href: 'https://www.linkedin.com/' },
+  { Icon: Mail, label: 'suciuvictor99@gmail.com', href: 'mailto:suciuvictor99@gmail.com' },
+  { Icon: LinkedinIcon, label: 'linkedin', href: 'https://www.linkedin.com/in/victor-suciu/' },
 ]
 
 export default function Contact() {
