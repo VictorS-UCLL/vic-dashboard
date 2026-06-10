@@ -1,181 +1,109 @@
-/**
- * Pure layout engine for the namespace-grouped topology.
- *
- * Top-down dependency flow. Child coordinates are RELATIVE to their parent
- * group (RF v12 parentId + extent:'parent'); group coordinates are absolute.
- */
+import { Boxes, Cloud, Server, X } from 'lucide-react'
 
-const NODE_W = 180
-const NODE_H = 66
-const ROW_GAP = 26
-const GROUP_PAD_X = 22
-const GROUP_PAD_TOP = 48
-const GROUP_PAD_BOT = 22
-
-export const NODE_DIMS = { NODE_W, NODE_H }
-
-const SHORT = {
-    'kube-prometheus-stack-grafana': 'grafana',
-    'kube-prometheus-stack-operator': 'prom-operator',
-    'kube-prometheus-stack-kube-state-metrics': 'kube-state-metrics',
-    'prometheus-kube-prometheus-stack-prometheus': 'prometheus',
-    'local-path-provisioner': 'local-path',
-}
-export const shortLabel = (name) => SHORT[name] ?? name
-
-const PRIORITY = {
-    traefik: 0,
-    portfolio: 0,
-    'kube-prometheus-stack-grafana': 0,
-    'prometheus-kube-prometheus-stack-prometheus': 1,
-    'kube-prometheus-stack-kube-state-metrics': 2,
-    'kube-prometheus-stack-operator': 3,
-    coredns: 1,
-    'metrics-server': 2,
-    'local-path-provisioner': 3,
-}
-const priority = (name) => PRIORITY[name] ?? 5
-
-function groupDims(count) {
-    return {
-        width: GROUP_PAD_X * 2 + NODE_W,
-        height: GROUP_PAD_TOP + GROUP_PAD_BOT + count * NODE_H + (count - 1) * ROW_GAP,
-    }
+const PHASE_COLOR = {
+    Running:   'text-live',
+    Succeeded: 'text-muted',
+    Pending:   'text-progress',
+    Failed:    'text-red-400',
+    Unknown:   'text-muted',
 }
 
-// Wider horizontal separation so the down-and-across edges have room to route
-// cleanly without crossing through groups.
-const GROUP_LAYOUT = {
-    'kube-system': { x: 60,  y: 170 },
-    default:       { x: 60,  y: 540 },
-    monitoring:    { x: 420, y: 540 },
+const NS_PILL = {
+    default:       'bg-accent/10 text-accent border-accent/30',
+    monitoring:    'bg-rav3d/10 text-rav3d border-rav3d/30',
+    'kube-system': 'bg-sys/10 text-sys border-sys/30',
+    cloudflare:    'bg-accent/10 text-accent border-accent/30',
 }
 
-export function buildGraph(workloads) {
-    const byNs = {}
-    for (const w of workloads) (byNs[w.namespace] ??= []).push(w)
-    for (const ns of Object.keys(byNs)) {
-        byNs[ns].sort((a, b) => priority(a.name) - priority(b.name) || a.name.localeCompare(b.name))
-    }
+export default function TopologyPanel({ node, onClose }) {
+    if (!node) return null
 
-    const nodes = []
+    const healthy = node.isStatic || node.available > 0
+    const KindIcon =
+        node.namespace === 'cloudflare' ? Cloud
+            : node.kind === 'StatefulSet' ? Server
+                : Boxes
+    const pill = NS_PILL[node.namespace] ?? 'bg-surface-2 text-muted border-border'
 
-    for (const ns of ['kube-system', 'default', 'monitoring']) {
-        const items = byNs[ns] ?? []
-        if (items.length === 0) continue
+    return (
+        <div className="mt-4 animate-fade-up overflow-hidden rounded-xl border border-border bg-surface">
+            <div className="flex items-start justify-between gap-4 border-b border-border bg-surface-2/40 px-5 py-3.5">
+                <div className="flex items-center gap-2.5">
+                    <KindIcon className="h-4 w-4 text-muted" strokeWidth={2} />
+                    <span className="font-mono text-sm font-semibold text-ink">
+            {node.fullName ?? node.name}
+          </span>
+                    <span className={`rounded border px-1.5 py-0.5 font-mono text-[10px] ${pill}`}>
+            {node.namespace}
+          </span>
+                </div>
+                <button
+                    onClick={onClose}
+                    aria-label="Close detail panel"
+                    className="shrink-0 rounded-md p-1 text-muted transition-colors duration-150 hover:bg-surface-2 hover:text-ink"
+                >
+                    <X className="h-4 w-4" strokeWidth={2} />
+                </button>
+            </div>
 
-        const base = GROUP_LAYOUT[ns] ?? { x: 60, y: 170 }
-        const { width, height } = groupDims(items.length)
+            <div className="p-5">
+                {node.isStatic ? (
+                    <p className="font-mono text-xs leading-relaxed text-muted">{node.description}</p>
+                ) : (
+                    <>
+                        <div className="mb-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
+                            <Stat label="kind" value={node.kind} />
+                            <Stat label="replicas" value={`${node.available}/1`} />
+                            <Stat
+                                label="status"
+                                value={healthy ? 'healthy' : 'degraded'}
+                                valueClass={healthy ? 'text-live' : 'text-red-400'}
+                            />
+                            <Stat label="pods" value={String(node.pods?.length ?? 0)} />
+                        </div>
 
-        nodes.push({
-            id: `group-${ns}`,
-            type: 'nsGroup',
-            position: base,
-            data: { namespace: ns, count: items.length },
-            style: { width, height },
-            selectable: false,
-            draggable: true,
-        })
-
-        items.forEach((w, i) => {
-            nodes.push({
-                id: w.name,
-                type: 'workload',
-                parentId: `group-${ns}`,
-                extent: 'parent',
-                position: { x: GROUP_PAD_X, y: GROUP_PAD_TOP + i * (NODE_H + ROW_GAP) },
-                data: {
-                    label: shortLabel(w.name),
-                    fullName: w.name,
-                    namespace: w.namespace,
-                    kind: w.kind,
-                    available: w.available,
-                    pods: w.pods,
-                    isSelected: false,
-                },
-            })
-        })
-    }
-
-    const ksGroup = byNs['kube-system'] ?? []
-    const ksWidth = groupDims(ksGroup.length).width
-    const cfX = GROUP_LAYOUT['kube-system'].x + ksWidth / 2 - NODE_W / 2
-
-    nodes.unshift({
-        id: 'cloudflare',
-        type: 'external',
-        position: { x: cfX, y: 30 },
-        data: {
-            label: 'Cloudflare',
-            fullName: 'Cloudflare',
-            namespace: 'cloudflare',
-            isSelected: false,
-            description:
-                'Edge network. TLS termination, DDoS protection, and Argo Tunnel routing to the origin. Real IP never exposed.',
-            pods: [],
-        },
-    })
-
-    return { nodes }
+                        {node.pods?.length > 0 && (
+                            <>
+                                <div className="mb-2.5 font-mono text-[11px] text-muted">
+                                    <span className="text-accent/70">// </span>pods
+                                </div>
+                                <div className="flex flex-col gap-2">
+                                    {node.pods.map((pod) => (
+                                        <PodRow key={pod.name} pod={pod} />
+                                    ))}
+                                </div>
+                            </>
+                        )}
+                    </>
+                )}
+            </div>
+        </div>
+    )
 }
 
-// ── edges: smoothstep (orthogonal) with rounded corners + offsets ───────────
-export function buildEdges({ accent, border, rav3d }) {
-    const arrow = (color) => ({ type: 'arrowclosed', width: 13, height: 13, color })
-    const lbl = (color) => ({
-        labelStyle: { fill: color, fontFamily: 'monospace', fontSize: 10 },
-        labelBgStyle: { fill: '#111318', fillOpacity: 0.9 },
-        labelBgPadding: [5, 3],
-        labelBgBorderRadius: 4,
-    })
+function Stat({ label, value, valueClass = 'text-ink' }) {
+    return (
+        <div className="rounded-lg border border-border bg-surface-2 px-3 py-2.5">
+            <div className="mb-1 font-mono text-[10px] text-muted">{label}</div>
+            <div className={`font-mono text-sm font-semibold ${valueClass}`}>{value}</div>
+        </div>
+    )
+}
 
-    return [
-        {
-            id: 'cf→traefik',
-            source: 'cloudflare', target: 'traefik',
-            type: 'smoothstep', label: 'https', animated: true,
-            pathOptions: { borderRadius: 12 },
-            markerEnd: arrow(accent),
-            style: { stroke: accent, strokeWidth: 1.6, opacity: 0.85 },
-            ...lbl(accent),
-        },
-        {
-            id: 'traefik→portfolio',
-            source: 'traefik', target: 'portfolio',
-            type: 'smoothstep', label: 'routes', animated: true,
-            pathOptions: { borderRadius: 12, offset: 16 },
-            markerEnd: arrow('#8a90a3'),
-            style: { stroke: '#4a4f63', strokeWidth: 1.5 },
-            ...lbl('#8a90a3'),
-        },
-        {
-            id: 'traefik→grafana',
-            source: 'traefik', target: 'kube-prometheus-stack-grafana',
-            type: 'smoothstep', label: 'routes', animated: true,
-            pathOptions: { borderRadius: 12, offset: 32 },
-            markerEnd: arrow('#8a90a3'),
-            style: { stroke: '#4a4f63', strokeWidth: 1.5 },
-            ...lbl('#8a90a3'),
-        },
-        {
-            id: 'ksm→prometheus',
-            source: 'kube-prometheus-stack-kube-state-metrics',
-            target: 'prometheus-kube-prometheus-stack-prometheus',
-            type: 'smoothstep', label: 'scrape', animated: false,
-            pathOptions: { borderRadius: 12, offset: 12 },
-            markerEnd: arrow(rav3d),
-            style: { stroke: rav3d, strokeWidth: 1.3, strokeDasharray: '5 4', opacity: 0.7 },
-            ...lbl(rav3d),
-        },
-        {
-            id: 'prometheus→grafana',
-            source: 'prometheus-kube-prometheus-stack-prometheus',
-            target: 'kube-prometheus-stack-grafana',
-            type: 'smoothstep', label: 'datasource', animated: false,
-            pathOptions: { borderRadius: 12, offset: 24 },
-            markerEnd: arrow(rav3d),
-            style: { stroke: rav3d, strokeWidth: 1.3, strokeDasharray: '5 4', opacity: 0.7 },
-            ...lbl(rav3d),
-        },
-    ]
+function PodRow({ pod }) {
+    const phaseClass = PHASE_COLOR[pod.phase] ?? 'text-muted'
+    return (
+        <div className="grid grid-cols-[1fr_auto_auto] items-center gap-4 rounded-lg border border-border bg-surface-2 px-3 py-2.5">
+      <span className="truncate font-mono text-[11px] text-muted" title={pod.name}>
+        {pod.name}
+      </span>
+            <span className={`font-mono text-[11px] ${phaseClass}`}>{pod.phase}</span>
+            <span
+                className={`font-mono text-[11px] ${pod.restarts > 0 ? 'text-progress' : 'text-muted'}`}
+                title="restart count"
+            >
+        {pod.restarts}r
+      </span>
+        </div>
+    )
 }
