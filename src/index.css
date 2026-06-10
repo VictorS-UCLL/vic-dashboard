@@ -9,7 +9,6 @@
 
   body {
     @apply bg-bg text-ink font-sans antialiased;
-    /* Subtle dot-grid texture — the "technical surface" the whole site sits on. */
     background-image: radial-gradient(rgba(42, 45, 58, 0.45) 1px, transparent 1px);
     background-size: 30px 30px;
     background-attachment: fixed;
@@ -22,36 +21,73 @@
 }
 
 @layer utilities {
-  /* Tabular figures so live metrics don't reflow as digits change. */
   .tnum {
     font-variant-numeric: tabular-nums;
   }
 }
 
-/* Thin, dark scrollbar to match the dashboard surface. */
-::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
-}
-::-webkit-scrollbar-track {
-  background: #111318;
-}
-::-webkit-scrollbar-thumb {
-  background: #2a2d3a;
-  border-radius: 5px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: #363a4a;
-}
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: #111318; }
+::-webkit-scrollbar-thumb { background: #2a2d3a; border-radius: 5px; }
+::-webkit-scrollbar-thumb:hover { background: #363a4a; }
 
-/* Respect users who prefer reduced motion — drop all non-essential animation. */
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
+  *, *::before, *::after {
     animation-duration: 0.001ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+/* ─── React Flow base ────────────────────────────────────────────────────── */
+.react-flow { background: transparent; }
+.react-flow__attribution { display: none !important; }
+
+/* group containers shouldn't show the default RF node chrome */
+.react-flow__node-nsGroup {
+  background: transparent;
+  border: none;
+  padding: 0;
+}
+
+/* remove default node focus outline — we render our own ring */
+.react-flow__node.selected,
+.react-flow__node:focus,
+.react-flow__node:focus-visible {
+  outline: none !important;
+}
+
+/* edge labels: tighten the auto background box */
+.react-flow__edge-textbg {
+  fill: #111318;
+}
+.react-flow__edge-text {
+  font-family: ui-monospace, monospace;
+}
+
+/* ─── Controls ───────────────────────────────────────────────────────────── */
+.react-flow__controls {
+  background: #1a1d24;
+  border: 1px solid #2a2d3a;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: none;
+}
+.react-flow__controls-button {
+  background: #1a1d24;
+  border: none;
+  border-bottom: 1px solid #2a2d3a;
+  color: #6b7080;
+  width: 26px;
+  height: 26px;
+  transition: background 0.15s, color 0.15s;
+}
+.react-flow__controls-button:hover { background: #1f222b; color: #e8eaf0; }
+.react-flow__controls-button:last-child { border-bottom: none; }
+.react-flow__controls-button svg { fill: currentColor; }
+
+/* ─── MiniMap ────────────────────────────────────────────────────────────── */
+.react-flow__minimap {
+  border-radius: 8px;
 }

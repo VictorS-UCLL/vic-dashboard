@@ -4,18 +4,18 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Fixed palette from the brief — do not drift from these.
-        bg: '#111318', // page background (dark gray, not pure black)
-        surface: '#1a1d24', // cards
-        'surface-2': '#1f222b', // raised surface inside cards
+        bg: '#111318',
+        surface: '#1a1d24',
+        'surface-2': '#1f222b',
         border: '#2a2d3a',
-        'border-bright': '#363a4a', // hover/active border
-        accent: '#39FF14', // bright neon green (420) — used sparingly
-        rav3d: '#9B30FF', // neon purple — RAV3D card only
-        ink: '#e8eaf0', // text primary
-        muted: '#6b7080', // text muted
-        live: '#3ecf8e', // status: live
-        progress: '#f5b942', // status: in progress
+        'border-bright': '#363a4a',
+        accent: '#39FF14',
+        rav3d: '#9B30FF',
+        sys: '#36b8c8',   // ← new: kube-system namespace accent
+        ink: '#e8eaf0',
+        muted: '#6b7080',
+        live: '#3ecf8e',
+        progress: '#f5b942',
       },
       fontFamily: {
         sans: ['"Inter Variable"', 'Inter', 'system-ui', '-apple-system', 'sans-serif'],
