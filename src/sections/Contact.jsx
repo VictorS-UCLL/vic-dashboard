@@ -1,8 +1,7 @@
 import { Mail } from 'lucide-react'
-import { GithubIcon, LinkedinIcon } from './icons'
-import { SectionLabel } from './ui'
+import { GithubIcon, LinkedinIcon } from '../components/icons'
+import { SectionHead } from '../components/ui'
 
-// NOTE: email + LinkedIn are placeholders — swap in the real ones.
 const LINKS = [
   { Icon: GithubIcon, label: 'VictorS-UCLL', href: 'https://github.com/VictorS-UCLL' },
   { Icon: Mail, label: 'suciuvictor99@gmail.com', href: 'mailto:suciuvictor99@gmail.com' },
@@ -12,7 +11,7 @@ const LINKS = [
 export default function Contact() {
   return (
     <section id="contact" className="mx-auto max-w-5xl scroll-mt-24 px-6 py-20">
-      <SectionLabel>contact</SectionLabel>
+      <SectionHead index="05" title="contact" />
 
       <div className="rounded-2xl border border-border bg-surface p-7 sm:p-9">
         <h2 className="text-2xl font-semibold tracking-tight text-ink">Let's build something.</h2>
@@ -27,7 +26,7 @@ export default function Contact() {
               href={href}
               target={href.startsWith('http') ? '_blank' : undefined}
               rel={href.startsWith('http') ? 'noreferrer' : undefined}
-              className="inline-flex items-center gap-2 rounded-lg border border-border bg-surface-2/50 px-4 py-2.5 font-mono text-sm text-muted transition-colors duration-200 hover:border-border-bright hover:text-ink cursor-pointer"
+              className="inline-flex items-center gap-2 rounded-lg border border-border bg-surface-2/50 px-4 py-2.5 font-mono text-sm text-muted transition-colors duration-200 hover:border-border-bright hover:text-ink cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
             >
               <Icon className="h-4 w-4" />
               {label}
@@ -35,7 +34,6 @@ export default function Contact() {
           ))}
         </div>
       </div>
-
     </section>
   )
 }

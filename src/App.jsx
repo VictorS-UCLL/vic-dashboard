@@ -1,61 +1,27 @@
 import { Routes, Route } from 'react-router-dom'
-import { GithubIcon } from './components/icons'
-import Hero from './components/Hero'
-import MetricsPanel from './components/MetricsPanel'
-import Projects from './components/Projects'
-import Stack from './components/Stack'
-import Contact from './components/Contact'
+import Nav from './components/Nav'
 import Footer from './components/Footer'
+import Hero from './sections/Hero'
+import Metrics from './sections/Metrics'
+import Topology from './sections/Topology'
+import Projects from './sections/Projects'
+import Stack from './sections/Stack'
+import Contact from './sections/Contact'
 import Privacy from './pages/Privacy'
-
-const NAV_LINKS = [
-  ['metrics', '#metrics'],
-  ['projects', '#projects'],
-  ['stack', '#stack'],
-  ['contact', '#contact'],
-]
-
-function Nav() {
-  return (
-    <nav className="fixed inset-x-0 top-0 z-50 border-b border-border/60 bg-bg/70 backdrop-blur-md">
-      <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-3.5">
-        <a href="#top" className="font-mono text-sm font-semibold text-ink cursor-pointer">
-          vic420<span className="text-accent">.com</span>
-        </a>
-
-        <div className="hidden items-center gap-6 font-mono text-xs text-muted sm:flex">
-          {NAV_LINKS.map(([label, href]) => (
-            <a
-              key={href}
-              href={href}
-              className="transition-colors duration-200 hover:text-ink cursor-pointer"
-            >
-              {label}
-            </a>
-          ))}
-        </div>
-
-        <a
-          href="https://github.com/VictorS-UCLL"
-          target="_blank"
-          rel="noreferrer"
-          aria-label="GitHub"
-          className="text-muted transition-colors duration-200 hover:text-ink cursor-pointer"
-        >
-          <GithubIcon className="h-4 w-4" />
-        </a>
-      </div>
-    </nav>
-  )
-}
+import { useClusterData } from './hooks/useClusterData'
 
 function Portfolio() {
+  // One poll feeds everything live on the page — stat cards, topology
+  // overlay, and pod detail share a single 30s tick.
+  const { metrics, history, workloads, pods, loading, live, lastUpdated } = useClusterData()
+
   return (
     <div id="top" className="relative flex min-h-screen flex-col">
       <Nav />
       <main className="flex-1">
         <Hero />
-        <MetricsPanel />
+        <Metrics metrics={metrics} history={history} loading={loading} live={live} lastUpdated={lastUpdated} />
+        <Topology workloads={workloads} pods={pods} live={live} />
         <Projects />
         <Stack />
         <Contact />

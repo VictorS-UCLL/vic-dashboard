@@ -28,6 +28,62 @@
   }
 }
 
+/* --- Hero terminal: CSS-only typed command. Width animates in ch steps inside a
+   fixed-width slot so there is zero layout shift; reduced-motion users get the
+   final state instantly via the global animation override below. --- */
+.cmd-type {
+  display: inline-block;
+  overflow: hidden;
+  white-space: nowrap;
+  vertical-align: bottom;
+  width: 0;
+  animation: cmd-type 0.9s steps(6, end) 0.6s forwards;
+}
+@keyframes cmd-type {
+  to {
+    width: 6ch;
+  }
+}
+.caret {
+  animation: caret-blink 1.1s steps(1) infinite;
+}
+@keyframes caret-blink {
+  50% {
+    opacity: 0;
+  }
+}
+/* Output line appears after the command finishes typing. */
+.cmd-output {
+  opacity: 0;
+  animation: fade-up 0.4s ease-out 1.6s forwards;
+}
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* --- React Flow: blend the canvas into the console surface. --- */
+.react-flow {
+  background: transparent;
+}
+.react-flow__edge-textbg {
+  fill: transparent;
+}
+.react-flow__node {
+  cursor: pointer;
+}
+.react-flow__node:focus-visible {
+  outline: 2px solid #39ff14;
+  outline-offset: 2px;
+  border-radius: 10px;
+}
+
 /* Thin, dark scrollbar to match the dashboard surface. */
 ::-webkit-scrollbar {
   width: 10px;

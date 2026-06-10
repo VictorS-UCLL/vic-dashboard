@@ -1,7 +1,16 @@
-import ProjectCard, { FeaturedCard } from './ProjectCard'
-import { SectionLabel } from './ui'
+export const FEATURED = {
+  name: 'vic420 homelab',
+  status: 'live',
+  description:
+    'Self-hosted production infrastructure built from scratch. Proxmox hypervisor, K3s cluster, Cloudflare Tunnel, full observability stack — and it serves the page you are reading.',
+  tags: ['proxmox', 'k3s', 'docker', 'traefik', 'cloudflare', 'prometheus', 'grafana'],
+  repo: 'github.com/VictorS-UCLL/homelab-k3s',
+  href: 'https://github.com/VictorS-UCLL/homelab-k3s',
+  // Rendered as the serving pipeline, ending at this very page.
+  pipeline: ['internet', 'cloudflare', 'traefik', 'portfolio'],
+}
 
-const PROJECTS = [
+export const PROJECTS = [
   {
     name: 'RAV3D',
     variant: 'rav3d',
@@ -14,7 +23,7 @@ const PROJECTS = [
   },
   {
     name: 'Emilio Archive',
-    variant: 'standard',
+    variant: 'archive',
     status: 'progress',
     description:
       'Digital archive and portfolio for Belgian graffiti artist Emilio. Underground archive aesthetic.',
@@ -22,19 +31,4 @@ const PROJECTS = [
     href: null, // add URL when live
     linkLabel: 'url coming soon',
   },
-  { variant: 'planned' },
 ]
-
-export default function Projects() {
-  return (
-    <section id="projects" className="mx-auto max-w-5xl scroll-mt-24 px-6 py-20">
-      <SectionLabel>projects</SectionLabel>
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-        <FeaturedCard />
-        {PROJECTS.map((p, i) => (
-          <ProjectCard key={p.name ?? `planned-${i}`} project={p} />
-        ))}
-      </div>
-    </section>
-  )
-}

@@ -6,9 +6,9 @@ export default function Footer() {
     <footer className="border-t border-border bg-bg">
       <div className="mx-auto flex max-w-5xl flex-col items-start justify-between gap-2 px-6 py-6 font-mono text-[11px] text-muted sm:flex-row sm:items-center">
         <span>
-          © 2026 victor suciu — vic420.com
-          <span className="mx-3 opacity-30">·</span>
           <span className="text-accent/80">$</span> built with react + vite · served from k3s
+          <span className="mx-3 opacity-30">·</span>
+          © 2026 victor suciu — vic420.com
         </span>
 
         <div className="flex items-center gap-4">

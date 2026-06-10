@@ -11,11 +11,13 @@ export default {
         border: '#2a2d3a',
         'border-bright': '#363a4a', // hover/active border
         accent: '#39FF14', // bright neon green (420) — used sparingly
-        rav3d: '#9B30FF', // neon purple — RAV3D card only
+        rav3d: '#9B30FF', // neon purple — RAV3D + monitoring namespace
+        sys: '#36b8c8', // teal — kube-system namespace
         ink: '#e8eaf0', // text primary
         muted: '#6b7080', // text muted
         live: '#3ecf8e', // status: live
         progress: '#f5b942', // status: in progress
+        crit: '#ff4d5e', // status: failed/down (pod phases, degraded workloads)
       },
       fontFamily: {
         sans: ['"Inter Variable"', 'Inter', 'system-ui', '-apple-system', 'sans-serif'],
