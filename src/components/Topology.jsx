@@ -12,7 +12,7 @@ import '@xyflow/react/dist/style.css'
 import { SectionLabel } from './ui'
 import { NamespaceGroup, WorkloadNode, ExternalNode } from './TopologyNodes'
 import TopologyPanel from './TopologyPanel'
-import { buildGraph, buildEdges } from './topologyLayout'
+import { buildGraph, buildEdges } from './topologyLayout.jsx'
 import { useTopologyData } from '../hooks/useTopologyData'
 
 const C = {
