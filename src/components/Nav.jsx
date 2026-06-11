@@ -1,8 +1,7 @@
+import { Link } from 'react-router-dom'
 import { GithubIcon } from './icons'
 
 const NAV_LINKS = [
-  ['metrics', '#metrics'],
-  ['topology', '#topology'],
   ['projects', '#projects'],
   ['stack', '#stack'],
   ['contact', '#contact'],
@@ -20,6 +19,12 @@ export default function Nav() {
         </a>
 
         <div className="hidden items-center gap-6 font-mono text-xs text-muted sm:flex">
+          <Link
+            to="/dashboard"
+            className="text-ink/90 transition-colors duration-200 hover:text-accent cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
+          >
+            dashboard
+          </Link>
           {NAV_LINKS.map(([label, href]) => (
             <a
               key={href}

@@ -7,7 +7,7 @@ import { FEATURED, PROJECTS } from '../data/projects'
 export default function Projects() {
   return (
     <section id="projects" className="mx-auto max-w-5xl scroll-mt-24 px-6 py-20">
-      <SectionHead index="03" title="projects" />
+      <SectionHead index="01" title="projects" />
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <FeaturedCard />
         {PROJECTS.map((p) => (

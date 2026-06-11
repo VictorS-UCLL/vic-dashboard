@@ -11,7 +11,7 @@ const LINKS = [
 export default function Contact() {
   return (
     <section id="contact" className="mx-auto max-w-5xl scroll-mt-24 px-6 py-20">
-      <SectionHead index="05" title="contact" />
+      <SectionHead index="03" title="contact" />
 
       <div className="rounded-2xl border border-border bg-surface p-7 sm:p-9">
         <h2 className="text-2xl font-semibold tracking-tight text-ink">Let's build something.</h2>

@@ -48,8 +48,12 @@ function deriveStatus(ready, desired) {
  * topology overlay (replica readiness per workload), and the pod lists for
  * the detail panel. Fail-soft per query (allSettled): a failed query keeps
  * its last-known value; `live` is true while Grafana is reachable at all.
+ *
+ * `topology: false` is the light mode for the home-page teaser — only the
+ * four scalar metrics are polled; the six vector queries stay off until the
+ * /dashboard route mounts the full hook.
  */
-export function useClusterData() {
+export function useClusterData({ topology = true } = {}) {
   const [state, setState] = useState({
     metrics: EMPTY_METRICS,
     history: { cpu: [], ram: [] },
@@ -70,12 +74,14 @@ export function useClusterData() {
         ram: (s) => queryScalar(METRIC_QUERIES.ram, s),
         pods: (s) => queryScalar(METRIC_QUERIES.pods, s),
         uptime: (s) => queryScalar(METRIC_QUERIES.uptime, s),
-        deployReady: (s) => queryVector(TOPOLOGY_QUERIES.deployReady, s),
-        deployDesired: (s) => queryVector(TOPOLOGY_QUERIES.deployDesired, s),
-        stsReady: (s) => queryVector(TOPOLOGY_QUERIES.stsReady, s),
-        stsDesired: (s) => queryVector(TOPOLOGY_QUERIES.stsDesired, s),
-        podPhase: (s) => queryVector(TOPOLOGY_QUERIES.podPhase, s),
-        podRestarts: (s) => queryVector(TOPOLOGY_QUERIES.podRestarts, s),
+        ...(topology && {
+          deployReady: (s) => queryVector(TOPOLOGY_QUERIES.deployReady, s),
+          deployDesired: (s) => queryVector(TOPOLOGY_QUERIES.deployDesired, s),
+          stsReady: (s) => queryVector(TOPOLOGY_QUERIES.stsReady, s),
+          stsDesired: (s) => queryVector(TOPOLOGY_QUERIES.stsDesired, s),
+          podPhase: (s) => queryVector(TOPOLOGY_QUERIES.podPhase, s),
+          podRestarts: (s) => queryVector(TOPOLOGY_QUERIES.podRestarts, s),
+        }),
       }
 
       let result
@@ -162,7 +168,7 @@ export function useClusterData() {
       controller.abort()
       clearInterval(timer.current)
     }
-  }, [])
+  }, [topology])
 
   return state
 }

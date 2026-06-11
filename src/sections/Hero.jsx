@@ -102,8 +102,8 @@ export default function Hero() {
       </div>
 
       <a
-        href="#metrics"
-        aria-label="Scroll to metrics"
+        href="#live"
+        aria-label="Scroll to live cluster strip"
         className="absolute bottom-8 left-6 text-muted transition-colors duration-200 hover:text-ink cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
       >
         <ArrowDown className="h-5 w-5 animate-bounce" />
