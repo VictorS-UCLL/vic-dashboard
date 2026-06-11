@@ -3,10 +3,12 @@ import { ArrowRight, ArrowUpRight, Server } from 'lucide-react'
 import { GithubIcon } from '../components/icons'
 import { Pill, SectionHead, StatusBadge, LiveDot } from '../components/ui'
 import { FEATURED, PROJECTS } from '../data/projects'
+import { useReveal } from '../hooks/useReveal'
 
 export default function Projects() {
+  const ref = useReveal()
   return (
-    <section id="projects" className="mx-auto max-w-5xl scroll-mt-24 px-6 py-20">
+    <section ref={ref} id="projects" className="reveal mx-auto max-w-5xl scroll-mt-24 px-6 py-20">
       <SectionHead index="01" title="projects" />
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <FeaturedCard />
@@ -24,9 +26,10 @@ export default function Projects() {
 function FeaturedCard() {
   return (
     <article className="group relative overflow-hidden rounded-2xl border border-border bg-surface p-6 transition-all duration-200 hover:-translate-y-0.5 hover:border-border-bright sm:p-7 md:col-span-2">
-      <div
+      {/* Powered circuit trace along the top edge — brightens on hover. */}
+      <span
         aria-hidden
-        className="pointer-events-none absolute -right-20 -top-20 h-48 w-48 rounded-full bg-accent/[0.08] blur-3xl"
+        className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-accent/60 via-accent/20 to-transparent transition-opacity duration-200 group-hover:from-accent/90"
       />
 
       <div className="grid gap-6 md:grid-cols-[1fr_300px]">
@@ -106,13 +109,14 @@ function ProjectCard({ project }) {
 function Rav3dCard({ project }) {
   return (
     <article className="group relative overflow-hidden rounded-2xl border border-rav3d/40 bg-[#0c0a10] p-6 transition-all duration-200 hover:-translate-y-0.5 hover:border-rav3d/70">
-      <div
+      {/* RAV3D trace — same circuit language as the featured card, in brand purple. */}
+      <span
         aria-hidden
-        className="pointer-events-none absolute -right-16 -top-16 h-44 w-44 rounded-full bg-rav3d/25 blur-3xl"
+        className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-rav3d/70 via-rav3d/25 to-transparent transition-opacity duration-200 group-hover:from-rav3d"
       />
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0 opacity-[0.05]"
+        className="pointer-events-none absolute inset-0 opacity-[0.06]"
         style={{
           backgroundImage:
             'repeating-linear-gradient(-45deg, #9B30FF 0, #9B30FF 1px, transparent 1px, transparent 9px)',

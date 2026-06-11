@@ -15,11 +15,6 @@ const READOUT = [
 export default function Hero() {
   return (
     <section className="relative mx-auto flex min-h-[88vh] max-w-5xl flex-col justify-center px-6 pt-28">
-      <div
-        aria-hidden
-        className="pointer-events-none absolute left-1/4 top-1/3 -z-10 h-72 w-72 -translate-x-1/2 rounded-full bg-accent/[0.07] blur-[120px]"
-      />
-
       <div className="grid items-center gap-12 lg:grid-cols-[1fr_320px]">
         <div>
           <div className="mb-7 inline-flex w-fit items-center gap-2 rounded-full border border-border bg-surface/60 px-3 py-1 font-mono text-xs text-muted">
@@ -27,9 +22,14 @@ export default function Hero() {
             live on self-hosted k3s
           </div>
 
-          <h1 className="text-5xl font-extrabold tracking-tight text-ink sm:text-7xl">
-            Victor Suciu
-          </h1>
+          {/* Viewport-selection frame instead of glow fog — light as lines. */}
+          <div className="relative w-fit">
+            <span aria-hidden className="absolute -left-4 -top-3 h-5 w-5 border-l border-t border-accent/30" />
+            <span aria-hidden className="absolute -bottom-2 -right-4 h-5 w-5 border-b border-r border-accent/30" />
+            <h1 className="text-5xl font-extrabold tracking-tight text-ink sm:text-7xl">
+              Victor Suciu
+            </h1>
+          </div>
 
           {/* Terminal moment: the command types itself, the answer follows. */}
           <div className="mt-5 font-mono text-sm sm:text-base" aria-label="whoami: infrastructure engineer and builder">

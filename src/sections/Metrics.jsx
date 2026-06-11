@@ -1,5 +1,6 @@
 import { Boxes, Clock, Cpu, MemoryStick } from 'lucide-react'
 import { SectionHead, LiveDot } from '../components/ui'
+import { useReveal } from '../hooks/useReveal'
 
 const STATS = [
   { key: 'cpu', label: 'cpu_usage', icon: Cpu, suffix: '%', caption: 'node avg · 5m rate', spark: true },
@@ -30,8 +31,9 @@ function Sparkline({ points }) {
 }
 
 export default function Metrics({ metrics, history, loading, live, lastUpdated }) {
+  const ref = useReveal()
   return (
-    <section id="metrics" className="mx-auto max-w-5xl scroll-mt-24 px-6 py-20">
+    <section ref={ref} id="metrics" className="reveal mx-auto max-w-5xl scroll-mt-24 px-6 py-20">
       <SectionHead
         index="01"
         title="live cluster metrics"

@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { ArrowRight } from 'lucide-react'
 import { LiveDot } from '../components/ui'
+import { useReveal } from '../hooks/useReveal'
 
 const ITEMS = [
   { key: 'cpu', label: 'cpu', suffix: '%' },
@@ -11,8 +12,9 @@ const ITEMS = [
 // The meta-hook, compressed: this site runs on the cluster it shows. One
 // glance of live numbers up front; the full console lives at /dashboard.
 export default function LiveTeaser({ metrics, live }) {
+  const ref = useReveal()
   return (
-    <section id="live" className="mx-auto max-w-5xl scroll-mt-24 px-6 pb-6">
+    <section ref={ref} id="live" className="reveal mx-auto max-w-5xl scroll-mt-24 px-6 pb-6">
       <Link
         to="/dashboard"
         className="group flex flex-col gap-4 rounded-xl border border-border bg-surface/70 px-5 py-4 transition-colors duration-200 hover:border-border-bright sm:flex-row sm:items-center sm:justify-between cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"

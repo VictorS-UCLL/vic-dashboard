@@ -1,9 +1,11 @@
 import { Pill, SectionHead } from '../components/ui'
 import { STACK_GROUPS, BIO } from '../data/stack'
+import { useReveal } from '../hooks/useReveal'
 
 export default function Stack() {
+  const ref = useReveal()
   return (
-    <section id="stack" className="mx-auto max-w-5xl scroll-mt-24 px-6 py-20">
+    <section ref={ref} id="stack" className="reveal mx-auto max-w-5xl scroll-mt-24 px-6 py-20">
       <SectionHead index="02" title="stack" />
 
       <div className="grid gap-10 md:grid-cols-5">

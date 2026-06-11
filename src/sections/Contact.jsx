@@ -1,6 +1,7 @@
 import { Mail } from 'lucide-react'
 import { GithubIcon, LinkedinIcon } from '../components/icons'
 import { SectionHead } from '../components/ui'
+import { useReveal } from '../hooks/useReveal'
 
 const LINKS = [
   { Icon: GithubIcon, label: 'VictorS-UCLL', href: 'https://github.com/VictorS-UCLL' },
@@ -9,8 +10,9 @@ const LINKS = [
 ]
 
 export default function Contact() {
+  const ref = useReveal()
   return (
-    <section id="contact" className="mx-auto max-w-5xl scroll-mt-24 px-6 py-20">
+    <section ref={ref} id="contact" className="reveal mx-auto max-w-5xl scroll-mt-24 px-6 py-20">
       <SectionHead index="03" title="contact" />
 
       <div className="rounded-2xl border border-border bg-surface p-7 sm:p-9">
