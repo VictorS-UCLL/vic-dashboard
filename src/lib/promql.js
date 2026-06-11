@@ -6,7 +6,10 @@ export const METRIC_QUERIES = {
   cpu: '100-(avg(rate(node_cpu_seconds_total{mode="idle"}[5m]))*100)',
   ram: '(1-(node_memory_MemAvailable_bytes/node_memory_MemTotal_bytes))*100',
   pods: 'count(kube_pod_status_phase{phase="Running"})',
-  uptime: 'node_time_seconds-node_boot_time_seconds',
+  // Availability %, not time-since-boot. The 7d window matches the cluster's
+  // Prometheus retention exactly (prometheus_tsdb_retention_limit_seconds =
+  // 604800, verified live) — a longer window would silently overstate.
+  uptime: 'avg_over_time(up{job="node-exporter"}[7d])*100',
 }
 
 // Topology overlay (instant vectors with labels).

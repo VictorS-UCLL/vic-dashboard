@@ -5,7 +5,7 @@ const STATS = [
   { key: 'cpu', label: 'cpu_usage', icon: Cpu, suffix: '%', caption: 'node avg · 5m rate', spark: true },
   { key: 'ram', label: 'mem_usage', icon: MemoryStick, suffix: '%', caption: 'of total memory', spark: true },
   { key: 'pods', label: 'pods_running', icon: Boxes, suffix: '', caption: 'phase=Running' },
-  { key: 'uptime', label: 'uptime', icon: Clock, suffix: '', caption: 'since last boot' },
+  { key: 'uptime', label: 'uptime', icon: Clock, suffix: '%', caption: 'node availability · 7d' },
 ]
 
 // Builds up over the visit (30s/point) — an ops console earns its sparklines.

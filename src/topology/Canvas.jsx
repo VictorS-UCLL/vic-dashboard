@@ -20,6 +20,42 @@ const NODE_TYPES = { workload: WorkloadNode, namespace: NamespaceGroup, external
 const EDGE_TYPES = { labeled: LabeledEdge }
 const FIT_OPTIONS = { padding: 0.1 }
 
+// Dragged node positions survive reloads. Versioned key: bump it whenever the
+// designed layout changes so stale saved positions don't fight a new layout.
+const POSITIONS_KEY = 'vic420.topology.positions.v1'
+
+function loadSavedPositions() {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(POSITIONS_KEY) ?? '{}')
+    const out = {}
+    for (const [id, p] of Object.entries(parsed)) {
+      if (p && Number.isFinite(p.x) && Number.isFinite(p.y)) out[id] = { x: p.x, y: p.y }
+    }
+    return out
+  } catch {
+    return {}
+  }
+}
+
+function savePositions(nodes) {
+  try {
+    const map = {}
+    for (const n of nodes) {
+      if (n.type !== 'namespace') map[n.id] = { x: n.position.x, y: n.position.y }
+    }
+    localStorage.setItem(POSITIONS_KEY, JSON.stringify(map))
+  } catch {
+    // Storage full or blocked — persistence is a nicety, never an error.
+  }
+}
+
+function buildNodesWithSaved() {
+  const saved = loadSavedPositions()
+  return buildNodes().map((n) =>
+    n.type !== 'namespace' && saved[n.id] ? { ...n, position: saved[n.id] } : n,
+  )
+}
+
 function ZoomControls() {
   const { zoomIn, zoomOut, fitView } = useReactFlow()
   const btn =
@@ -55,8 +91,17 @@ function RefitOnResize({ trigger }) {
  * never touches positions, so dragged nodes stay where the visitor put them.
  */
 export default function Canvas({ workloads, selectedId, onSelect, fullscreen }) {
-  const [nodes, setNodes, onNodesChange] = useNodesState(useMemo(buildNodes, []))
+  const [nodes, setNodes, onNodesChange] = useNodesState(useMemo(buildNodesWithSaved, []))
   const [edges] = useEdgesState(useMemo(buildEdges, []))
+
+  // Persist after a drag ends; reading state via the functional form avoids a
+  // stale closure over `nodes`.
+  const onNodeDragStop = () => {
+    setNodes((nds) => {
+      savePositions(nds)
+      return nds
+    })
+  }
 
   useEffect(() => {
     setNodes((nds) =>
@@ -73,6 +118,7 @@ export default function Canvas({ workloads, selectedId, onSelect, fullscreen }) 
       nodes={nodes}
       edges={edges}
       onNodesChange={onNodesChange}
+      onNodeDragStop={onNodeDragStop}
       nodeTypes={NODE_TYPES}
       edgeTypes={EDGE_TYPES}
       fitView

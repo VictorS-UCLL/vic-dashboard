@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { queryScalar, queryVector, queryAllSettled } from '../lib/grafana'
 import { METRIC_QUERIES, TOPOLOGY_QUERIES } from '../lib/promql'
 import { WORKLOADS } from '../data/topology'
-import { formatUptime, formatClock, roundOrNull } from '../lib/format'
+import { formatAvailability, formatClock, roundOrNull } from '../lib/format'
 
 const POLL_MS = 30_000
 const HISTORY_LEN = 24 // ~12 min of session sparkline at 30s/tick
@@ -93,7 +93,7 @@ export function useClusterData() {
           cpu: out.cpu !== undefined ? roundOrNull(out.cpu) : prev.metrics.cpu,
           ram: out.ram !== undefined ? roundOrNull(out.ram) : prev.metrics.ram,
           pods: out.pods !== undefined ? roundOrNull(out.pods) : prev.metrics.pods,
-          uptime: out.uptime !== undefined ? formatUptime(out.uptime) : prev.metrics.uptime,
+          uptime: out.uptime !== undefined ? formatAvailability(out.uptime) : prev.metrics.uptime,
         }
 
         const history = { ...prev.history }

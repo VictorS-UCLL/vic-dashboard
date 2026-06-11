@@ -35,14 +35,23 @@ http {
         add_header Permissions-Policy "geolocation=(), microphone=(), camera=()" always;
         add_header Content-Security-Policy "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; font-src 'self'; connect-src 'self'; base-uri 'self'; frame-ancestors 'none'; object-src 'none'" always;
 
-        # --- Live metrics: same-origin proxy to Grafana. The token is injected here,
-        #     server-side, so it never reaches the browser. ---
-        location /grafana-api/ {
-            proxy_pass https://grafana.vic420.com/;
+        # --- Live metrics: same-origin proxy to Grafana, locked to the single
+        #     read-only PromQL endpoint the app calls. The Viewer token is
+        #     injected here, server-side, so it never reaches the browser —
+        #     and visitors can't reach any other Grafana API through it. ---
+        location = /grafana-api/api/datasources/proxy/uid/prometheus/api/v1/query {
+            limit_except GET { deny all; }
+            proxy_pass https://grafana.vic420.com/api/datasources/proxy/uid/prometheus/api/v1/query;
             proxy_set_header Host grafana.vic420.com;
             proxy_set_header Authorization "Bearer ${GRAFANA_TOKEN}";
+            proxy_set_header Cookie "";
             proxy_ssl_server_name on;
             proxy_hide_header Set-Cookie;
+        }
+
+        # Everything else under the proxy prefix is not for visitors.
+        location /grafana-api/ {
+            return 404;
         }
 
         # Vite fingerprints asset filenames (incl. self-hosted fonts) → cache hard.

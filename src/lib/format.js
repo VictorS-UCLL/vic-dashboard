@@ -1,11 +1,8 @@
-export function formatUptime(seconds) {
-  if (seconds == null || Number.isNaN(seconds)) return null
-  const d = Math.floor(seconds / 86400)
-  const h = Math.floor((seconds % 86400) / 3600)
-  const m = Math.floor((seconds % 3600) / 60)
-  if (d > 0) return `${d}d ${h}h`
-  if (h > 0) return `${h}h ${m}m`
-  return `${m}m`
+// Availability needs decimals to mean anything — 99.97 ≠ 100 — but a clean
+// 100 shouldn't render as "100.00".
+export function formatAvailability(pct) {
+  if (pct == null || Number.isNaN(pct)) return null
+  return pct >= 99.995 ? '100' : pct.toFixed(2)
 }
 
 export function formatClock(date = new Date()) {
