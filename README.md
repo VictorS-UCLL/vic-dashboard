@@ -1,18 +1,24 @@
 # vic-dashboard
 
-Source code and Dockerfile for my personal portfolio/dashboard, deployed to Kubernetes at [vic420.com](https://vic420.com).
+Source code for my personal portfolio dashboard — live at [vic420.com](https://vic420.com).
+
+A React single-page app that doubles as a live window into the infrastructure it runs on: real-time cluster metrics and an interactive topology view, both pulled from the Prometheus/Grafana stack running on the same K3s cluster that serves this site.
 
 ---
 
 ## Stack
 
-- **Runtime:** nginx:alpine (non-root, port 8080)
-- **Container registry:** ghcr.io/victors-ucll/vic420-portfolio
+- **Framework:** React + Vite (static build, no SSR)
+- **Styling:** Tailwind CSS
+- **Graph:** React Flow (`@xyflow/react`) for the live cluster topology
+- **Icons:** Lucide React
+- **Runtime:** nginx:alpine — non-root, port 8080
+- **Registry:** ghcr.io/victors-ucll/vic420-portfolio
 - **Orchestration:** K3s via [homelab-k3s](https://github.com/VictorS-UCLL/homelab-k3s)
 - **Ingress:** Traefik
 - **Exposure:** Cloudflare Tunnel (no open ports, no exposed IP)
-- **TLS:** Cloudflare Origin Certificate, Full (strict) mode
-- **CI/CD:** GitHub Actions → ghcr.io → manual rollout
+- **TLS:** Cloudflare Origin Certificate, Full (strict)
+- **CI/CD:** GitHub Actions on a self-hosted runner → build → ghcr.io → automatic K3s rollout
 
 ---
 
@@ -20,91 +26,123 @@ Source code and Dockerfile for my personal portfolio/dashboard, deployed to Kube
 
 ```
 vic-dashboard/
-├── .github/
-│   └── workflows/
-│       └── deploy.yml   # Build and push to ghcr.io
-├── Dockerfile           # nginx:alpine, runs as non-root on port 8080
-├── nginx.conf           # Custom config, non-root compatible, tmp dirs
-└── index.html           # Portfolio content
+├── .github/workflows/deploy.yml   # CI/CD: build, push, deploy (self-hosted runner)
+├── public/
+├── src/
+│   ├── components/
+│   │   ├── Hero.jsx
+│   │   ├── MetricsPanel.jsx        # live CPU/RAM/pods/uptime cards
+│   │   ├── Topology.jsx            # React Flow cluster topology viewer
+│   │   ├── TopologyNodes.jsx       # group / workload / external node types
+│   │   ├── TopologyPanel.jsx       # node detail panel
+│   │   ├── topologyLayout.js       # pure layout + edge engine
+│   │   ├── Projects.jsx
+│   │   ├── ProjectCard.jsx
+│   │   ├── Stack.jsx
+│   │   ├── Contact.jsx
+│   │   ├── Footer.jsx
+│   │   ├── icons.jsx
+│   │   └── ui.jsx                  # shared primitives (SectionLabel, etc.)
+│   ├── hooks/
+│   │   ├── useGrafanaMetrics.js    # polls the 4 headline metrics
+│   │   └── useTopologyData.js      # polls deployments/statefulsets/pods
+│   ├── pages/
+│   │   └── Privacy.jsx
+│   ├── App.jsx
+│   ├── main.jsx
+│   └── index.css
+├── Dockerfile                      # multi-stage build → non-root nginx:alpine
+├── nginx.conf.template             # rendered at startup via envsubst
+├── tailwind.config.js
+├── vite.config.js
+└── index.html
 ```
 
 ---
 
-## CI/CD workflow
+## Live data — how metrics reach the browser
 
-Pushing to `main` or triggering manually via the Actions tab:
+The browser only ever calls the same-origin path `/grafana-api/...`. There is **no Grafana token in the client bundle**.
 
-1. Builds the Docker image
-2. Pushes to `ghcr.io/victors-ucll/vic420-portfolio:latest`
+- **Dev:** the Vite proxy (`vite.config.js`) forwards `/grafana-api` to Grafana and injects the bearer token server-side.
+- **Prod:** nginx does the same. `nginx.conf.template` is rendered at container startup via `envsubst`, injecting `GRAFANA_TOKEN` from the environment. The token is supplied at runtime by the K8s secret `grafana-token` — never baked into the image.
 
-Then on the server, trigger the rollout:
+PromQL queries hit Grafana's Prometheus datasource proxy (`/api/datasources/proxy/uid/prometheus/...`). All fetches fail soft: on error, metrics show `--` and topology keeps its last-known state.
 
-```bash
-kubectl rollout restart deployment portfolio
-kubectl rollout status deployment portfolio
-```
+---
+
+## CI/CD
+
+Pushing to `main` (or a manual `workflow_dispatch`) triggers the pipeline on a **self-hosted runner on the homelab VM**:
+
+1. Build the Docker image
+2. Push to `ghcr.io/victors-ucll/vic420-portfolio:latest`
+3. `kubectl rollout restart` + `rollout status` — runs locally on the runner, no SSH or exposed API
+
+Because the runner sits on the same machine as K3s, deployment is fully automatic — no manual rollout step.
 
 ---
 
 ## Local development
 
 ```bash
-# Build the image
-docker build -t vic420-portfolio:latest .
+# Install deps
+npm install
 
-# Run locally
-docker run -d -p 8080:80 --name portfolio vic420-portfolio:latest
+# Dev server (needs a local .env with GRAFANA_TOKEN for live metrics — gitignored)
+npm run dev
 
-# View in browser
-open http://localhost:8080
+# Production build
+npm run build && npm run preview
+```
 
-# Stop
-docker rm -f portfolio
+`.env` (local only, never committed):
+```
+GRAFANA_TOKEN=<grafana service-account token>
 ```
 
 ---
 
-## Manual deploy (server)
-
-If you need to rebuild and push manually without GitHub Actions:
+## Build & run the container locally
 
 ```bash
-docker build -t vic420-portfolio:latest .
-docker tag vic420-portfolio:latest ghcr.io/victors-ucll/vic420-portfolio:latest
-docker push ghcr.io/victors-ucll/vic420-portfolio:latest
-kubectl rollout restart deployment portfolio
+docker build -t vic420 .
+docker run --rm -p 8080:8080 -e GRAFANA_TOKEN=<token> vic420
+# http://localhost:8080
 ```
 
 ---
 
 ## Security
 
-- Container runs as `nginx` user — not root
-- Port 8080 inside container (non-privileged port)
-- Resource limits: 64Mi RAM, 100m CPU
-- `imagePullPolicy: Always` — always pulls latest image on restart
-- No secrets or credentials baked into the image
+- nginx runs as the non-root `nginx` user on port 8080
+- Grafana token injected at runtime via K8s secret — never in the image or the JS bundle
+- Resource limits enforced on the deployment (64Mi RAM, 100m CPU)
+- `imagePullPolicy: Always` — rollout always pulls the latest image
 - Traffic encrypted end-to-end via Cloudflare Tunnel + Full (strict) TLS
-- Real IP never exposed — Cloudflare Tunnel is outbound only
+- Real IP never exposed — the tunnel is outbound only
+- No cookies, no analytics, no data collection (see `/privacy`)
 
 ---
 
-## GitHub Actions secrets required
+## GitHub Actions secrets
 
 | Secret | Purpose |
 |--------|---------|
-| `REGISTRY_TOKEN` | GitHub PAT with `write:packages` scope for ghcr.io push |
+| `REGISTRY_TOKEN` | GitHub PAT with `write:packages` — ghcr.io push |
+
+The self-hosted runner uses the local kubeconfig at `/home/vic/.kube/config` for deployment, so no cluster credentials are stored as GitHub secrets.
 
 ---
 
 ## Roadmap
 
-- [x] Portfolio placeholder
-- [x] Non-root nginx container
-- [x] Resource limits
 - [x] Live at vic420.com via Cloudflare Tunnel
 - [x] HTTPS with Cloudflare Origin Certificate (Full strict)
-- [x] GitHub Actions CI/CD pipeline
-- [ ] Real portfolio design
-- [ ] Automatic rollout on image push
-- [ ] Prometheus metrics
+- [x] Non-root nginx container with resource limits
+- [x] React + Vite + Tailwind portfolio
+- [x] Live cluster metrics panel (Grafana/Prometheus)
+- [x] Interactive cluster topology viewer (React Flow)
+- [x] CI/CD with automatic rollout on a self-hosted runner
+- [ ] Full visual redesign
+- [ ] Management dashboard (auth + backend API)
