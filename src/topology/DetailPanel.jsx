@@ -1,4 +1,5 @@
-import { X } from 'lucide-react'
+import { useState } from 'react'
+import { ChevronRight, X } from 'lucide-react'
 import { NS_COLORS } from '../data/topology'
 
 const PHASE_STYLE = {
@@ -18,6 +19,9 @@ const STATUS_TEXT = {
 
 // Geek mode on demand: clicking a workload opens this; the canvas stays clean.
 export default function DetailPanel({ workload, live, pods, onClose }) {
+  // Which pod row is expanded to show its description. Parent keys this
+  // component by workload id, so switching workloads resets it.
+  const [openPod, setOpenPod] = useState(null)
   const color = NS_COLORS[workload.namespace]
   const status = STATUS_TEXT[live?.status ?? 'unknown']
   const replicas = live?.ready != null && live?.desired != null ? `${live.ready}/${live.desired}` : '--'
@@ -57,25 +61,42 @@ export default function DetailPanel({ workload, live, pods, onClose }) {
         </dl>
 
         <div>
-          <div className="mb-2 grid grid-cols-[1fr_auto_auto] gap-x-4 font-mono text-[10px] uppercase tracking-widest text-muted">
+          <div className="mb-2 grid grid-cols-[auto_1fr_auto_auto] gap-x-2.5 px-2.5 font-mono text-[10px] uppercase tracking-widest text-muted">
+            <span aria-hidden className="w-3" />
             <span>pod</span>
             <span>phase</span>
             <span className="text-right">restarts</span>
           </div>
           {pods?.length ? (
             <ul className="space-y-1.5">
-              {pods.map((p) => (
-                <li
-                  key={p.name}
-                  className="grid grid-cols-[1fr_auto_auto] items-center gap-x-4 rounded-md border border-border/60 bg-surface-2/50 px-2.5 py-1.5 font-mono text-xs"
-                >
-                  <span className="truncate text-ink/80">{p.name}</span>
-                  <span className={`rounded border px-1.5 py-px text-[10px] ${PHASE_STYLE[p.phase] ?? PHASE_STYLE.Unknown}`}>
-                    {p.phase}
-                  </span>
-                  <span className="tnum text-right text-muted">{p.restarts}</span>
-                </li>
-              ))}
+              {pods.map((p) => {
+                const open = openPod === p.name
+                return (
+                  <li key={p.name}>
+                    <button
+                      type="button"
+                      onClick={() => setOpenPod(open ? null : p.name)}
+                      aria-expanded={open}
+                      className="grid w-full grid-cols-[auto_1fr_auto_auto] items-center gap-x-2.5 rounded-md border border-border/60 bg-surface-2/50 px-2.5 py-1.5 text-left font-mono text-xs transition-colors duration-200 hover:border-border-bright cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
+                    >
+                      <ChevronRight
+                        aria-hidden
+                        className={`h-3 w-3 shrink-0 text-muted transition-transform duration-200 ${open ? 'rotate-90' : ''}`}
+                      />
+                      <span className="truncate text-ink/80">{p.name}</span>
+                      <span className={`rounded border px-1.5 py-px text-[10px] ${PHASE_STYLE[p.phase] ?? PHASE_STYLE.Unknown}`}>
+                        {p.phase}
+                      </span>
+                      <span className="tnum text-right text-muted">{p.restarts}</span>
+                    </button>
+                    {open && (
+                      <p className="animate-fade-up mt-1 rounded-md border border-border/40 bg-bg/60 px-2.5 py-2 pl-8 text-[11px] leading-relaxed text-muted">
+                        {workload.desc}
+                      </p>
+                    )}
+                  </li>
+                )
+              })}
             </ul>
           ) : (
             <p className="font-mono text-xs text-muted">— no live pod data</p>

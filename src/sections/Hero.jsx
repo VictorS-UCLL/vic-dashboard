@@ -24,7 +24,7 @@ export default function Hero() {
         <div>
           <div className="mb-7 inline-flex w-fit items-center gap-2 rounded-full border border-border bg-surface/60 px-3 py-1 font-mono text-xs text-muted">
             <LiveDot className="h-2 w-2" />
-            live on self-hosted k3s — you're looking at the headline project
+            live on self-hosted k3s
           </div>
 
           <h1 className="text-5xl font-extrabold tracking-tight text-ink sm:text-7xl">

@@ -73,6 +73,7 @@ export default function Topology({ workloads, pods, live }) {
       {selected && (
         <div className={`mt-4 ${fullscreen ? 'max-h-[40vh] overflow-y-auto' : ''}`}>
           <DetailPanel
+            key={selected.id}
             workload={selected}
             live={workloads[selected.id]}
             pods={pods[selected.id]}

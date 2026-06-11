@@ -4,7 +4,7 @@ import { SectionHead, LiveDot } from '../components/ui'
 const STATS = [
   { key: 'cpu', label: 'cpu_usage', icon: Cpu, suffix: '%', caption: 'node avg · 5m rate', spark: true },
   { key: 'ram', label: 'mem_usage', icon: MemoryStick, suffix: '%', caption: 'of total memory', spark: true },
-  { key: 'pods', label: 'pods_running', icon: Boxes, suffix: '', caption: 'phase=Running' },
+  { key: 'pods', label: 'pods_running', icon: Boxes, suffix: '' },
   { key: 'uptime', label: 'uptime', icon: Clock, suffix: '%', caption: 'node availability · 7d' },
 ]
 
@@ -81,7 +81,7 @@ function StatCard({ stat, value, history, loading }) {
       ) : (
         <div aria-hidden className="mt-3 h-7 border-b border-border/40" />
       )}
-      <div className="mt-2 font-mono text-[10px] text-muted/70">{stat.caption}</div>
+      {stat.caption && <div className="mt-2 font-mono text-[10px] text-muted/70">{stat.caption}</div>}
     </div>
   )
 }

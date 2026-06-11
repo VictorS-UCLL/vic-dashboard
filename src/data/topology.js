@@ -20,15 +20,42 @@ export const NAMESPACES = [
 // a Helm chart, so its workloads carry kube-prometheus-stack-* names —
 // verified live against the cluster).
 export const WORKLOADS = [
-  { id: 'traefik', name: 'traefik', kind: 'deploy', namespace: 'kube-system' },
-  { id: 'coredns', name: 'coredns', kind: 'deploy', namespace: 'kube-system' },
-  { id: 'metrics-server', name: 'metrics-server', kind: 'deploy', namespace: 'kube-system' },
-  { id: 'local-path-provisioner', name: 'local-path-provisioner', kind: 'deploy', namespace: 'kube-system' },
-  { id: 'portfolio', name: 'portfolio', kind: 'deploy', namespace: 'default' },
-  { id: 'kube-state-metrics', name: 'kube-state-metrics', kind: 'deploy', namespace: 'monitoring', metric: 'kube-prometheus-stack-kube-state-metrics' },
-  { id: 'prom-operator', name: 'prom-operator', kind: 'deploy', namespace: 'monitoring', metric: 'kube-prometheus-stack-operator' },
-  { id: 'prometheus', name: 'prometheus', kind: 'sts', namespace: 'monitoring', metric: 'prometheus-kube-prometheus-stack-prometheus' },
-  { id: 'grafana', name: 'grafana', kind: 'deploy', namespace: 'monitoring', metric: 'kube-prometheus-stack-grafana' },
+  {
+    id: 'traefik', name: 'traefik', kind: 'deploy', namespace: 'kube-system',
+    desc: 'Ingress controller — receives traffic from the Cloudflare tunnel and routes it to the right service inside the cluster.',
+  },
+  {
+    id: 'coredns', name: 'coredns', kind: 'deploy', namespace: 'kube-system',
+    desc: 'Cluster DNS — every service name lookup inside the cluster goes through this pod.',
+  },
+  {
+    id: 'metrics-server', name: 'metrics-server', kind: 'deploy', namespace: 'kube-system',
+    desc: 'Resource metrics API — powers kubectl top and autoscaling decisions with live CPU/memory readings.',
+  },
+  {
+    id: 'local-path-provisioner', name: 'local-path-provisioner', kind: 'deploy', namespace: 'kube-system',
+    desc: 'Storage provisioner — creates PersistentVolumes on node-local disk when a workload claims storage.',
+  },
+  {
+    id: 'portfolio', name: 'portfolio', kind: 'deploy', namespace: 'default',
+    desc: 'This website — nginx serving the static bundle you are reading, plus the locked-down proxy that feeds it live metrics.',
+  },
+  {
+    id: 'kube-state-metrics', name: 'kube-state-metrics', kind: 'deploy', namespace: 'monitoring', metric: 'kube-prometheus-stack-kube-state-metrics',
+    desc: 'Exports cluster object state — deployments, replicas, pod phases — as Prometheus metrics. The topology you see is built from its data.',
+  },
+  {
+    id: 'prom-operator', name: 'prom-operator', kind: 'deploy', namespace: 'monitoring', metric: 'kube-prometheus-stack-operator',
+    desc: 'Operator for the monitoring stack — keeps Prometheus configured and reconciled so the rest of this namespace runs itself.',
+  },
+  {
+    id: 'prometheus', name: 'prometheus', kind: 'sts', namespace: 'monitoring', metric: 'prometheus-kube-prometheus-stack-prometheus',
+    desc: 'Time-series database — scrapes and stores every metric in the cluster. Runs as a StatefulSet so its data survives restarts.',
+  },
+  {
+    id: 'grafana', name: 'grafana', kind: 'deploy', namespace: 'monitoring', metric: 'kube-prometheus-stack-grafana',
+    desc: 'Dashboards and the datasource proxy — the same instance this page queries for the live numbers above.',
+  },
 ]
 
 // Not a k8s object — the edge in front of everything.
