@@ -24,10 +24,6 @@ export default {
         mono: ['"JetBrains Mono Variable"', '"JetBrains Mono"', 'ui-monospace', 'monospace'],
       },
       keyframes: {
-        'pulse-soft': {
-          '0%, 100%': { opacity: '1' },
-          '50%': { opacity: '0.35' },
-        },
         shimmer: {
           '100%': { transform: 'translateX(100%)' },
         },
@@ -37,7 +33,6 @@ export default {
         },
       },
       animation: {
-        'pulse-soft': 'pulse-soft 2s ease-in-out infinite',
         shimmer: 'shimmer 1.6s ease-in-out infinite',
         'fade-up': 'fade-up 0.5s ease-out both',
       },
