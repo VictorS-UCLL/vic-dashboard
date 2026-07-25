@@ -7,8 +7,8 @@ import { NAMESPACES, WORKLOADS, EXTERNAL, CONNECTIONS, NS_COLORS } from '../data
 // right, and the corridor between namespace boxes (y≈420) carries the one
 // long cross edge. Tune positions here, nowhere else.
 
-export const NODE_W = 200
-export const NODE_H = 64
+const NODE_W = 200
+const NODE_H = 64
 
 const NS_BOXES = {
   'ns-kube-system': { x: 20, y: 170, w: 1020, h: 190 },
