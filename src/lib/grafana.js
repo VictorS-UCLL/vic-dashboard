@@ -42,5 +42,5 @@ export async function queryAllSettled(specs, signal) {
       fulfilled++
     }
   })
-  return { out, fulfilled, total: names.length }
+  return { out, fulfilled }
 }
