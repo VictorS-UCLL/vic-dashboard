@@ -1,5 +1,6 @@
-# Rendered at image-build time via envsubst (only ${GRAFANA_TOKEN} is substituted;
-# nginx's own $variables are left intact). See Dockerfile.
+# Rendered at container start by the Dockerfile CMD via envsubst — only
+# ${GRAFANA_TOKEN} is substituted, so nginx's own $variables survive intact.
+# The token is a runtime secret from a Kubernetes Secret, never a build input.
 worker_processes 1;
 pid /tmp/nginx.pid;
 error_log /tmp/nginx-error.log warn;
@@ -41,11 +42,17 @@ http {
         #     and visitors can't reach any other Grafana API through it. ---
         location = /grafana-api/api/datasources/proxy/uid/prometheus/api/v1/query {
             limit_except GET { deny all; }
-            proxy_pass https://grafana.vic420.com/api/datasources/proxy/uid/prometheus/api/v1/query;
-            proxy_set_header Host grafana.vic420.com;
+
+            # In-cluster Service DNS. The portfolio and Grafana are pods in the
+            # same cluster, so this call never leaves the cluster network.
+            # Routing via grafana.vic420.com instead would hairpin out through
+            # the ISP to Cloudflare's edge and back down the tunnel, add the
+            # public internet as a dependency of an internal call, and be
+            # blocked by the Cloudflare Access policy on that hostname.
+            proxy_pass http://kube-prometheus-stack-grafana.monitoring.svc.cluster.local:80/api/datasources/proxy/uid/prometheus/api/v1/query;
+            proxy_set_header Host kube-prometheus-stack-grafana.monitoring.svc.cluster.local;
             proxy_set_header Authorization "Bearer ${GRAFANA_TOKEN}";
             proxy_set_header Cookie "";
-            proxy_ssl_server_name on;
             proxy_hide_header Set-Cookie;
         }
 
