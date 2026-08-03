@@ -3,7 +3,11 @@
 # The token is a runtime secret from a Kubernetes Secret, never a build input.
 worker_processes 1;
 pid /tmp/nginx.pid;
-error_log /tmp/nginx-error.log warn;
+
+# Errors go to stderr so the container runtime collects them and they appear
+# in `kubectl logs`. Writing to a file inside the container meant nothing
+# collected them and they died with the pod.
+error_log /dev/stderr warn;
 
 events {
     worker_connections 1024;
@@ -59,6 +63,15 @@ http {
         # Everything else under the proxy prefix is not for visitors.
         location /grafana-api/ {
             return 404;
+        }
+
+        # --- Health endpoint for the readiness probe. Returns without touching
+        #     the filesystem, and is excluded from the access log so probe
+        #     traffic does not drown out real requests. ---
+        location = /healthz {
+            access_log off;
+            add_header Content-Type text/plain;
+            return 200 "ok\n";
         }
 
         # Vite fingerprints asset filenames (incl. self-hosted fonts) → cache hard.
